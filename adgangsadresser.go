@@ -3,9 +3,13 @@ package dawa
 import (
 	"bufio"
 	"encoding/csv"
-	"github.com/ugorji/go/codec"
 	"io"
 	"strconv"
+	"encoding/json"
+
+	"github.com/kalledk/dawa/time"
+	"github.com/ugorji/go/codec"
+	"fmt"
 )
 
 // En adgangsadresse er en struktureret betegnelse som angiver en særskilt
@@ -37,11 +41,131 @@ type AdgangsAdresse struct {
 	Zone              string              `json:"zone"`              // Hvilken zone adressen ligger i. "Byzone", "Sommerhusområde" eller "Landzone". Beregnes udfra adgangspunktet og zoneinddelingerne fra PlansystemDK
 }
 
+type KM1 struct {
+	Nord uint64
+	Øst  uint64
+}
+
+func (km1 KM1) String() string {
+	return fmt.Sprintf("km1_%v_%v", km1.Nord, km1.Øst)
+}
+
+func (km1 *KM1) UnmarshalJSON(b []byte) (err error) {
+	var s string
+	if err := json.Unmarshal(b, &s); err != nil {
+		return err
+	}
+
+	if len(s) != 12 {
+		return fmt.Errorf("KM1: Unmarshal: Invalid length, must be 12 got [%v]", s)
+	}
+	
+	if s[0:3] != "km1" {
+		return fmt.Errorf("KM1: Unmarshal: Invalid type, must be km1 got [%v]", s)
+	}
+
+	km1.Nord, err = strconv.ParseUint(s[4:8], 10, 64)
+	if err != nil {
+		return err
+	}
+
+	km1.Øst, err = strconv.ParseUint(s[9:12], 10, 64)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (km1 KM1) MarshalJSON() ([]byte, error) {
+	return json.Marshal(km1.String())
+}
+
+type KM10 struct {
+	Nord uint64
+	Øst  uint64
+}
+
+func (km10 KM10) String() string {
+	return fmt.Sprintf("km10_%v_%v", km10.Nord, km10.Øst)
+}
+
+func (km10 *KM10) UnmarshalJSON(b []byte) (err error) {
+	var s string
+	if err := json.Unmarshal(b, &s); err != nil {
+		return err
+	}
+
+	if len(s) != 11 {
+		return fmt.Errorf("KM10: Unmarshal: Invalid length, must be 11 got [%v]", s)
+	}
+	
+	if s[0:4] != "km10" {
+		return fmt.Errorf("KM10: Unmarshal: Invalid type, must be km10 got [%v]", s)
+	}
+
+	km10.Nord, err = strconv.ParseUint(s[5:8], 10, 64)
+	if err != nil {
+		return err
+	}
+
+	km10.Øst, err = strconv.ParseUint(s[9:11], 10, 64)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (km10 KM10) MarshalJSON() ([]byte, error) {
+	return json.Marshal(km10.String())
+}
+
+type M100 struct {
+	Nord uint64
+	Øst  uint64
+}
+
+func (m100 M100) String() string {
+	return fmt.Sprintf("m100_%v_%v", m100.Nord, m100.Øst)
+}
+
+func (m100 *M100) UnmarshalJSON(b []byte) (err error) {
+	var s string
+	if err := json.Unmarshal(b, &s); err != nil {
+		return err
+	}
+
+	if len(s) != 15 {
+		return fmt.Errorf("KM10: Unmarshal: Invalid length, must be 15 got [%v]", s)
+	}
+	
+	if s[0:4] != "m100" {
+		return fmt.Errorf("KM10: Unmarshal: Invalid type, must be m100 got [%v]", s)
+	}
+
+	m100.Nord, err = strconv.ParseUint(s[5:10], 10, 64)
+	if err != nil {
+		return err
+	}
+
+	m100.Øst, err = strconv.ParseUint(s[11:15], 10, 64)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m100 M100) MarshalJSON() ([]byte, error) {
+	return json.Marshal(m100.String())
+}
+
 // Adressens placering i Det Danske Kvadratnet (DDKN).
 type DDKN struct {
-	Km1  string `json:"km1"`
-	Km10 string `json:"km10"`
-	M100 string `json:"m100"`
+	Km1  KM1  `json:"km1"`
+	Km10 KM10 `json:"km10"`
+	M100 M100 `json:"m100"`
 }
 
 type ChangeInfo struct {
@@ -57,7 +181,7 @@ type Adgangspunkt struct {
 	Nøjagtighed     string    `json:"nøjagtighed"`     // Kode der angiver nøjagtigheden for adressepunktet. Et tegn. ”A” betyder at adressepunktet er absolut placeret på et detaljeret grundkort, tyisk med en nøjagtighed bedre end +/- 2 meter. ”B” betyder at adressepunktet er beregnet – typisk på basis af matrikelkortet, således at adressen ligger midt på det pågældende matrikelnummer. I så fald kan nøjagtigheden være ringere en end +/- 100 meter afhængig af forholdene. ”U” betyder intet adressepunkt.
 	Tekniskstandard string    `json:"tekniskstandard"` // Kode der angiver den specifikation adressepunktet skal opfylde. 2 tegn. ”TD” = 3 meter inde i bygningen ved det sted hvor indgangsdør e.l. skønnes placeret; ”TK” = Udtrykkelig TK-standard: 3 meter inde i bygning, midt for længste side mod vej; ”TN” Alm. teknisk standard: bygningstyngdepunkt eller blot i bygning; ”UF” = Uspecificeret/foreløbig: ikke nødvendigvis placeret i bygning."
 	Tekstretning    float64   `json:"tekstretning"`    // Angiver en evt. retningsvinkel for adressen i ”gon” dvs. hvor hele cirklen er 400 gon og 200 er vandret. Værdier 0.00-400.00: Eksempel: ”128.34”.
-	Ændret          AwsTime   `json:"ændret"`          // Dato for sidste ændring i adressepunktet, som registreret af BBR.
+	Ændret          time.Time `json:"ændret"`          // Dato for sidste ændring i adressepunktet, som registreret af BBR.
 }
 
 type Ejerlav struct {
@@ -67,8 +191,8 @@ type Ejerlav struct {
 }
 
 type Historik struct {
-	Oprettet AwsTime `json:"oprettet"` // Dato og tid for data oprettelse,
-	Ændret   AwsTime `json:"ændret"`   // Dato og tid hvor der sidst er ændret i data,
+	Oprettet time.Time `json:"oprettet"` // Dato og tid for data oprettelse,
+	Ændret   time.Time `json:"ændret"`   // Dato og tid hvor der sidst er ændret i data,
 }
 
 // Kommunen som adressen er beliggende i. Reference
@@ -227,14 +351,14 @@ func ImportAdgangsAdresserCSV(in io.Reader) (*AdgangsAdresseIter, error) {
 			}
 
 			// Example 2000-02-16T21:58:33.000
-			o, err := ParseTime(v["oprettet"])
+			o, err := time.Parse(v["oprettet"])
 			if err != nil {
 				ret.err = err
 				return
 			}
 			a.Historik.Oprettet = *o
 
-			o, err = ParseTime(v["ændret"])
+			o, err = time.Parse(v["ændret"])
 			if err != nil {
 				ret.err = err
 				return
@@ -267,7 +391,7 @@ func ImportAdgangsAdresserCSV(in io.Reader) (*AdgangsAdresseIter, error) {
 			a.DDKN.M100 = v["ddkn_m100"]
 			a.DDKN.Km1 = v["ddkn_km1"]
 			a.DDKN.Km10 = v["ddkn_km10"]
-			o, err = ParseTime(v["adressepunktændringsdato"])
+			o, err = time.Parse(v["adressepunktændringsdato"])
 			if err != nil {
 				ret.err = err
 				return

@@ -5,6 +5,8 @@ import (
 	"io"
 	"reflect"
 	"testing"
+
+	"github.com/kalledk/dawa/time"
 )
 
 var vejstykker_json_input = `
@@ -82,8 +84,8 @@ func TestImportVejstykkerJSON(t *testing.T) {
 		Vejstykke{
 			Adresseringsnavn: "Vesten Bavnen",
 			Historik: Historik{
-				Oprettet: MustParseTime("2010-01-17T11:19:52.237"),
-				Ændret:   MustParseTime("2010-01-17T11:19:52.237"),
+				Oprettet: time.MustParse("2010-01-17T11:19:52.237"),
+				Ændret:   time.MustParse("2010-01-17T11:19:52.237"),
 			},
 			Href: "http://dawa.aws.dk/vejstykker/563/9369",
 			Kode: "9369",
@@ -104,8 +106,8 @@ func TestImportVejstykkerJSON(t *testing.T) {
 		Vejstykke{
 			Adresseringsnavn: "Vesten Sandene",
 			Historik: Historik{
-				Oprettet: MustParseTime("2010-01-17T11:19:52.237"),
-				Ændret:   MustParseTime("2010-01-17T11:19:52.237"),
+				Oprettet: time.MustParse("2010-01-17T11:19:52.237"),
+				Ændret:   time.MustParse("2010-01-17T11:19:52.237"),
 			},
 			Href: "http://dawa.aws.dk/vejstykker/563/9379",
 			Kode: "9379",
@@ -126,8 +128,8 @@ func TestImportVejstykkerJSON(t *testing.T) {
 		Vejstykke{
 			Adresseringsnavn: "Vesterengen",
 			Historik: Historik{
-				Oprettet: MustParseTime("2010-01-17T11:19:52.253"),
-				Ændret:   MustParseTime("2010-01-17T11:19:52.253"),
+				Oprettet: time.MustParse("2010-01-17T11:19:52.253"),
+				Ændret:   time.MustParse("2010-01-17T11:19:52.253"),
 			},
 			Href: "http://dawa.aws.dk/vejstykker/563/9389",
 			Kode: "9389",

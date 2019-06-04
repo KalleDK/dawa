@@ -1,4 +1,4 @@
-package dawa
+package time
 
 import (
 	"encoding/gob"
@@ -7,7 +7,7 @@ import (
 )
 
 // Since date/time is not a standard encoded field, we must create out own type.
-type AwsTime time.Time
+type Time time.Time
 
 var location *time.Location
 
@@ -18,41 +18,41 @@ func init() {
 		panic(err)
 	}
 	// Register it as Gob
-	gob.Register(AwsTime{})
+	gob.Register(Time{})
 }
 
 // ParseTime will return the time encoding for a single field
 // It the input must be AWS formatted encoding
-func ParseTime(s string) (*AwsTime, error) {
+func Parse(s string) (*Time, error) {
 	result, err := time.ParseInLocation("2006-01-02T15:04:05.000", string(s), location)
 	if err != nil {
 		return nil, err
 	}
-	t := AwsTime(result)
+	t := Time(result)
 	return &t, nil
 }
 
 // MustParseTime will return the time encoding for a single field
 // It the input must be AWS formatted encoding
-func MustParseTime(s string) AwsTime {
+func MustParse(s string) Time {
 	result, err := time.ParseInLocation("2006-01-02T15:04:05.000", string(s), location)
 	if err != nil {
 		panic(err)
 	}
-	return AwsTime(result)
+	return Time(result)
 }
 
-func (t AwsTime) MarshalText() (text []byte, err error) {
+func (t Time) MarshalText() (text []byte, err error) {
 	return t.MarshalJSON()
 }
 
-func (t *AwsTime) UnmarshalText(text []byte) error {
+func (t *Time) UnmarshalText(text []byte) error {
 	return t.UnmarshalJSON(text)
 }
 
 // UnmarshalJSON a single time field
 // It will attempt AWS encoding, and if that fails standard UnmarshalJSON for time.Time
-func (t *AwsTime) UnmarshalJSON(b []byte) error {
+func (t *Time) UnmarshalJSON(b []byte) error {
 	unquoted := strings.Trim(string(b), "\"")
 	result, err := time.ParseInLocation("2006-01-02T15:04:05.000", unquoted, location)
 
@@ -63,31 +63,31 @@ func (t *AwsTime) UnmarshalJSON(b []byte) error {
 		if err != nil {
 			return err
 		}
-		*t = AwsTime(t2)
+		*t = Time(t2)
 		return nil
 	}
 
-	*t = AwsTime(result)
+	*t = Time(result)
 	return nil
 }
 
 // Time will return the underlying time.Time object
-func (t AwsTime) Time() time.Time {
+func (t Time) Time() time.Time {
 	return time.Time(t)
 }
 
 // MarshalJSON will send it as ordinary Javascipt date
-func (t AwsTime) MarshalJSON() ([]byte, error) {
+func (t Time) MarshalJSON() ([]byte, error) {
 	return time.Time(t).MarshalJSON()
 }
 
 // GobEncode (as time.Time)
-func (t AwsTime) GobEncode() ([]byte, error) {
+func (t Time) GobEncode() ([]byte, error) {
 	return time.Time(t).GobEncode()
 }
 
 // GobDecode (as time.Time)
-func (t *AwsTime) GobDecode(data []byte) error {
+func (t *Time) GobDecode(data []byte) error {
 	return (*time.Time)(t).GobDecode(data)
 }
 

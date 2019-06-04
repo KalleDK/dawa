@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"testing"
 	//"github.com/gobs/pretty"
+	"github.com/kalledk/dawa/time"
 )
 
 var adgangs_csv_data = `id,status,oprettet,ændret,vejkode,vejnavn,husnr,supplerendebynavn,postnr,postnrnavn,kommunekode,kommunenavn,ejerlavkode,ejerlavnavn,matrikelnr,esrejendomsnr,etrs89koordinat_øst,etrs89koordinat_nord,wgs84koordinat_bredde,wgs84koordinat_længde,nøjagtighed,kilde,tekniskstandard,tekstretning,adressepunktændringsdato,ddkn_m100,ddkn_km1,ddkn_km10,kvh,regionskode,regionsnavn,sognekode,sognenavn,politikredskode,politikredsnavn,retskredskode,retskredsnavn,opstillingskredskode,opstillingskredsnavn,zone
@@ -32,7 +33,7 @@ func TestImportAdgangsAdresserCSV(t *testing.T) {
 				Nøjagtighed:     "A",
 				Tekniskstandard: "TD",
 				Tekstretning:    200,
-				Ændret:          MustParseTime("2002-04-07T00:00:00.000"),
+				Ændret:          time.MustParse("2002-04-07T00:00:00.000"),
 			},
 			Ejerlav: Ejerlav{
 				Kode: 2000174,
@@ -40,8 +41,8 @@ func TestImportAdgangsAdresserCSV(t *testing.T) {
 			},
 			EsrEjendomsNr: "9343",
 			Historik: Historik{
-				Oprettet: MustParseTime("2000-02-05T20:17:59.000"),
-				Ændret:   MustParseTime("2009-11-25T01:07:37.000"),
+				Oprettet: time.MustParse("2000-02-05T20:17:59.000"),
+				Ændret:   time.MustParse("2009-11-25T01:07:37.000"),
 			},
 			Href:  "",
 			Husnr: "3A",
@@ -369,7 +370,7 @@ func TestImportAdgangsAdresserJSON(t *testing.T) {
 				Nøjagtighed:     "A",
 				Tekniskstandard: "TD",
 				Tekstretning:    200,
-				Ændret:          MustParseTime("2002-04-07T00:00:00.000"),
+				Ændret:          time.MustParse("2002-04-07T00:00:00.000"),
 			},
 			Ejerlav: Ejerlav{
 				Kode: 2000174,
@@ -377,8 +378,8 @@ func TestImportAdgangsAdresserJSON(t *testing.T) {
 			},
 			EsrEjendomsNr: "9343",
 			Historik: Historik{
-				Oprettet: MustParseTime("2000-02-05T20:17:59.000"),
-				Ændret:   MustParseTime("2009-11-25T01:07:37.000"),
+				Oprettet: time.MustParse("2000-02-05T20:17:59.000"),
+				Ændret:   time.MustParse("2009-11-25T01:07:37.000"),
 			},
 			Href:  "http://dawa.aws.dk/adgangsadresser/0a3f507a-3669-32b8-e044-0003ba298018",
 			Husnr: "3A",

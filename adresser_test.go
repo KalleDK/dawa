@@ -5,12 +5,16 @@ import (
 	"io"
 	"reflect"
 	"testing"
+
+  "github.com/kalledk/dawa/url"
+  "github.com/kalledk/dawa/uuid"
+  "github.com/kalledk/dawa/time"
 )
 
-var csv_data = `id,status,oprettet,ændret,vejkode,vejnavn,husnr,etage,dør,supplerendebynavn,postnr,postnrnavn,kommunekode,kommunenavn,ejerlavkode,ejerlavnavn,matrikelnr,esrejendomsnr,etrs89koordinat_øst,etrs89koordinat_nord,wgs84koordinat_bredde,wgs84koordinat_længde,nøjagtighed,kilde,tekniskstandard,tekstretning,ddkn_m100,ddkn_km1,ddkn_km10,adressepunktændringsdato,adgangsadresseid,adgangsadresse_status,adgangsadresse_oprettet,adgangsadresse_ændret,kvhx,regionskode,regionsnavn,sognekode,sognenavn,politikredskode,politikredsnavn,retskredskode,retskredsnavn,opstillingskredskode,opstillingskredsnavn,zone
-0a3f50b7-6545-32b8-e044-0003ba298018,1,2000-02-05T18:09:56.000,2000-02-16T21:58:33.000,0001,A Hansensvej,6,,,Vråby,6792,Rømø,0550,Tønder,1470852,"Kirkeby, Rømø",76,9097,470620,6105713,55.0972751504817,8.53959543878291,A,5,UF,200,100m_61057_4706,1km_6105_470,10km_610_47,2004-10-08T00:00:00.000,0a3f508c-3307-32b8-e044-0003ba298018,1,2000-02-05T18:09:56.000,2009-11-24T03:15:25.000,05500001___6_______,1083,Region Syddanmark,9062,Rømø,1464,Syd- og Sønderjyllands Politi,1147,Retten i Sønderborg,0051,Tønder,Landzone
-0a3f50b7-6544-32b8-e044-0003ba298018,1,2000-02-05T18:09:53.000,2000-02-16T21:58:33.000,0001,A Hansensvej,5,,,Vråby,6792,Rømø,0550,Tønder,1470852,"Kirkeby, Rømø",720,8848,470531,6105718,55.0973148017997,8.53820028085436,A,5,UF,200,100m_61057_4705,1km_6105_470,10km_610_47,2004-10-08T00:00:00.000,0a3f508c-3306-32b8-e044-0003ba298018,1,2000-02-05T18:09:53.000,2009-11-24T03:15:25.000,05500001___5_______,1083,Region Syddanmark,9062,Rømø,1464,Syd- og Sønderjyllands Politi,1147,Retten i Sønderborg,0051,Tønder,Landzone
-0a3f50b7-6547-32b8-e044-0003ba298018,1,2000-02-05T18:09:49.000,2004-02-12T16:05:28.000,0001,A Hansensvej,8,,,Vråby,6792,Rømø,0550,Tønder,1470852,"Kirkeby, Rømø",770,8559,470587,6105811,55.0981538216665,8.5390681928166,A,5,UF,200,100m_61058_4705,1km_6105_470,10km_610_47,2004-10-08T00:00:00.000,0a3f508c-3309-32b8-e044-0003ba298018,1,2000-02-05T18:09:49.000,2009-11-24T03:15:25.000,05500001___8_______,1083,Region Syddanmark,9062,Rømø,1464,Syd- og Sønderjyllands Politi,1147,Retten i Sønderborg,0051,Tønder,Landzone
+var csv_data = `id,status,oprettet,ændret,vejkode,vejnavn,husnr,etage,dør,supplerendebynavn,postnr,postnrnavn,kommunekode,kommunenavn,ejerlavkode,ejerlavnavn,matrikelnr,esrejendomsnr,etrs89koordinat_øst,etrs89koordinat_nord,wgs84koordinat_bredde,wgs84koordinat_længde,nøjagtighed,kilde,tekniskstandard,tekstretning,ddkn_m100,ddkn_km1,ddkn_km10,adressepunktændringsdato,adgangsadresseid,adgangsadresse_status,adgangsadresse_oprettet,adgangsadresse_ændret,kvhx,regionskode,regionsnavn,sognekode,sognenavn,politikredskode,politikredsnavn,retskredskode,retskredsnavn,opstillingskredskode,opstillingskredsnavn,zone,href
+0a3f50b7-6545-32b8-e044-0003ba298018,1,2000-02-05T18:09:56.000,2000-02-16T21:58:33.000,0001,A Hansensvej,6,,,Vråby,6792,Rømø,0550,Tønder,1470852,"Kirkeby, Rømø",76,9097,470620,6105713,55.0972751504817,8.53959543878291,A,5,UF,200,100m_61057_4706,1km_6105_470,10km_610_47,2004-10-08T00:00:00.000,0a3f508c-3307-32b8-e044-0003ba298018,1,2000-02-05T18:09:56.000,2009-11-24T03:15:25.000,05500001___6_______,1083,Region Syddanmark,9062,Rømø,1464,Syd- og Sønderjyllands Politi,1147,Retten i Sønderborg,0051,Tønder,Landzone,http://dawa.aws.dk/adresser/0a3f50b9-68b1-32b8-e044-0003ba298018
+0a3f50b7-6544-32b8-e044-0003ba298018,1,2000-02-05T18:09:53.000,2000-02-16T21:58:33.000,0001,A Hansensvej,5,,,Vråby,6792,Rømø,0550,Tønder,1470852,"Kirkeby, Rømø",720,8848,470531,6105718,55.0973148017997,8.53820028085436,A,5,UF,200,100m_61057_4705,1km_6105_470,10km_610_47,2004-10-08T00:00:00.000,0a3f508c-3306-32b8-e044-0003ba298018,1,2000-02-05T18:09:53.000,2009-11-24T03:15:25.000,05500001___5_______,1083,Region Syddanmark,9062,Rømø,1464,Syd- og Sønderjyllands Politi,1147,Retten i Sønderborg,0051,Tønder,Landzone,http://dawa.aws.dk/adresser/0a3f50b9-68b1-32b8-e044-0003ba298018
+0a3f50b7-6547-32b8-e044-0003ba298018,1,2000-02-05T18:09:49.000,2004-02-12T16:05:28.000,0001,A Hansensvej,8,,,Vråby,6792,Rømø,0550,Tønder,1470852,"Kirkeby, Rømø",770,8559,470587,6105811,55.0981538216665,8.5390681928166,A,5,UF,200,100m_61058_4705,1km_6105_470,10km_610_47,2004-10-08T00:00:00.000,0a3f508c-3309-32b8-e044-0003ba298018,1,2000-02-05T18:09:49.000,2009-11-24T03:15:25.000,05500001___8_______,1083,Region Syddanmark,9062,Rømø,1464,Syd- og Sønderjyllands Politi,1147,Retten i Sønderborg,0051,Tønder,Landzone,http://dawa.aws.dk/adresser/0a3f50b9-68b1-32b8-e044-0003ba298018
 `
 
 func TestImportAdresserCSV(t *testing.T) {
@@ -18,13 +22,25 @@ func TestImportAdresserCSV(t *testing.T) {
 	csv_expect := []Adresse{
 		Adresse{
 			Adgangsadresse: AdgangsAdresse{
-				DDKN: DDKN{Km1: "1km_6105_470", Km10: "10km_610_47", M100: "100m_61057_4706"},
+				DDKN: DDKN{
+          Km1: "1km_6105_470",
+          Km10: "10km_610_47",
+          M100: "100m_61057_4706",
+        },
 				Adgangspunkt: Adgangspunkt{
-					Kilde: 5, Koordinater: []float64{55.0972751504817, 8.53959543878291}, Nøjagtighed: "A", Tekniskstandard: "UF", Tekstretning: 200, Ændret: MustParseTime("2004-10-08T00:00:00.000"),
+          Kilde: 5,
+          Koordinater: []float64{55.0972751504817, 8.53959543878291},
+          Nøjagtighed: "A",
+          Tekniskstandard: "UF",
+          Tekstretning: 200,
+          Ændret: time.MustParse("2004-10-08T00:00:00.000"),
 				},
-				Ejerlav:           Ejerlav{Kode: 1470852, Navn: "Kirkeby, Rømø"},
+				Ejerlav: Ejerlav{
+          Kode: 1470852,
+          Navn: "Kirkeby, Rømø",
+        },
 				EsrEjendomsNr:     "9097",
-				Historik:          Historik{Oprettet: MustParseTime("2000-02-05T18:09:56.000"), Ændret: MustParseTime("2009-11-24T03:15:25.000")},
+				Historik:          Historik{Oprettet: time.MustParse("2000-02-05T18:09:56.000"), Ændret: time.MustParse("2009-11-24T03:15:25.000")},
 				Href:              "",
 				Husnr:             "6",
 				ID:                "0a3f508c-3307-32b8-e044-0003ba298018",
@@ -44,11 +60,14 @@ func TestImportAdresserCSV(t *testing.T) {
 			Adressebetegnelse: "",
 			Dør:               "",
 			Etage:             "",
-			Historik:          Historik{Oprettet: MustParseTime("2000-02-05T18:09:56.000"), Ændret: MustParseTime("2000-02-16T21:58:33.000")},
-			Href:              "",
-			ID:                "0a3f50b7-6545-32b8-e044-0003ba298018",
-			Kvhx:              "05500001___6_______",
-			Status:            1},
+			Historik: Historik{
+				Oprettet: time.MustParse("2000-02-05T18:09:56.000"),
+				Ændret:   time.MustParse("2000-02-16T21:58:33.000"),
+			},
+			Href:   url.MustParse("http://dawa.aws.dk/adresser/0a3f50b9-68b1-32b8-e044-0003ba298018"),
+			ID:     uuid.MustParse("0a3f50b7-6545-32b8-e044-0003ba298018"),
+			Kvhx:   "05500001___6_______",
+			Status: 1},
 		Adresse{},
 		Adresse{},
 	}
@@ -355,10 +374,10 @@ func TestImportAdresserJSON(t *testing.T) {
 	var json_expect = []Adresse{
 		Adresse{Adgangsadresse: AdgangsAdresse{
 			DDKN:             DDKN{Km1: "1km_6144_462", Km10: "10km_614_46", M100: "100m_61445_4621"},
-			Adgangspunkt:     Adgangspunkt{Kilde: 1, Koordinater: []float64{8.40179905638495, 55.4454386963562}, Nøjagtighed: "A", Tekniskstandard: "TK", Tekstretning: 125.9, Ændret: MustParseTime("2000-09-18T00:00:00.000")}, // "ændret": "2000-09-18T00:00:00.000"
+			Adgangspunkt:     Adgangspunkt{Kilde: 1, Koordinater: []float64{8.40179905638495, 55.4454386963562}, Nøjagtighed: "A", Tekniskstandard: "TK", Tekstretning: 125.9, Ændret: time.MustParse("2000-09-18T00:00:00.000")}, // "ændret": "2000-09-18T00:00:00.000"
 			Ejerlav:          Ejerlav{Kode: 1351151, Navn: "Odden By, Nordby"},
 			EsrEjendomsNr:    "10045",
-			Historik:         Historik{Oprettet: MustParseTime("2000-02-05T18:30:56.000"), Ændret: MustParseTime("2009-11-24T03:15:25.000")}, //       "oprettet": "2000-02-05T18:30:56.000", "ændret": "2009-11-24T03:15:25.000"
+			Historik:         Historik{Oprettet: time.MustParse("2000-02-05T18:30:56.000"), Ændret: time.MustParse("2009-11-24T03:15:25.000")}, //       "oprettet": "2000-02-05T18:30:56.000", "ændret": "2009-11-24T03:15:25.000"
 			Href:             "http://dawa.aws.dk/adgangsadresser/0a3f508d-d915-32b8-e044-0003ba298018",
 			Husnr:            "1",
 			ID:               "0a3f508d-d915-32b8-e044-0003ba298018",
@@ -375,9 +394,9 @@ func TestImportAdresserJSON(t *testing.T) {
 			Adressebetegnelse: "A B C Sti 1, 1., Nordby, 6720 Fanø",
 			Dør:               "",
 			Etage:             "1",
-			Historik:          Historik{Oprettet: MustParseTime("2000-02-05T18:30:56.000"), Ændret: MustParseTime("2000-02-16T22:02:44.000")}, //     "oprettet": "2000-02-05T18:30:56.000", "ændret": "2000-02-16T22:02:44.000"
-			Href:              "http://dawa.aws.dk/adresser/0a3f50b9-68b1-32b8-e044-0003ba298018",
-			ID:                "0a3f50b9-68b1-32b8-e044-0003ba298018",
+			Historik:          Historik{Oprettet: time.MustParse("2000-02-05T18:30:56.000"), Ændret: time.MustParse("2000-02-16T22:02:44.000")}, //     "oprettet": "2000-02-05T18:30:56.000", "ændret": "2000-02-16T22:02:44.000"
+			Href:              url.MustParse("http://dawa.aws.dk/adresser/0a3f50b9-68b1-32b8-e044-0003ba298018"),
+			ID:                uuid.MustParse("0a3f50b9-68b1-32b8-e044-0003ba298018"),
 			Kvhx:              "05630110___1__1____",
 			Status:            1,
 		},

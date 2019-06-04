@@ -3,9 +3,13 @@ package dawa
 import (
 	"bufio"
 	"encoding/csv"
-	"github.com/ugorji/go/codec"
 	"io"
 	"strconv"
+
+	"github.com/kalledk/dawa/time"
+	"github.com/kalledk/dawa/url"
+	"github.com/kalledk/dawa/uuid"
+	"github.com/ugorji/go/codec"
 )
 
 type Adresse struct {
@@ -14,8 +18,8 @@ type Adresse struct {
 	Dør               string         `json:"dør"`               // Dørbetegnelse. Tal fra 1 til 9999, små og store bogstaver samt tegnene / og -.
 	Etage             string         `json:"etage"`             // Etagebetegnelse. Hvis værdi angivet kan den antage følgende værdier: tal fra 1 til 99, st, kl, kl2 op til kl9.
 	Historik          Historik       `json:"historik"`          // Væsentlige tidspunkter for adressen
-	Href              string         `json:"href"`              // Adgangsadressens URL.
-	ID                string         `json:"id"`                // Adressens unikke id, f.eks. 0a3f5095-45ec-32b8-e044-0003ba298018.
+	Href              url.URL        `json:"href"`              // Adgangsadressens URL.
+	ID                uuid.UUID      `json:"id"`                // Adressens unikke id, f.eks. 0a3f5095-45ec-32b8-e044-0003ba298018.
 	Kvhx              string         `json:"kvhx"`              // KVHX-nøgle. 19 tegn bestående af 4 cifre der repræsenterer kommunekode, 4 cifre der repræsenterer vejkode, 4 tegn der repræsenter husnr, 3 tegn der repræsenterer etage og 4 tegn der repræsenter dør.
 	Status            int            `json:"status"`            // Adressens status. 1 indikerer en gældende adresse, 3 indikerer en foreløbig adresse.
 }
@@ -69,7 +73,12 @@ func ImportAdresserCSV(in io.Reader) (*AdresseIter, error) {
 			}
 			// PROCESS: id,status,oprettet,ændret,vejkode,vejnavn,husnr,etage,dør,supplerendebynavn
 			a := Adresse{}
-			a.ID = v["id"]
+			a.ID, err = uuid.Parse(v["id"])
+			if err != nil {
+				ret.err = err
+				return
+			}
+
 			a.Status, err = strconv.Atoi(v["status"])
 			if err != nil {
 				ret.err = err
@@ -77,18 +86,26 @@ func ImportAdresserCSV(in io.Reader) (*AdresseIter, error) {
 			}
 
 			// Example 2000-02-16T21:58:33.000
-			o, err := ParseTime(v["oprettet"])
+			o, err := time.Parse(v["oprettet"])
 			if err != nil {
 				ret.err = err
 				return
 			}
 			a.Historik.Oprettet = *o
 
-			o, err = ParseTime(v["ændret"])
+			o, err = time.Parse(v["ændret"])
 			if err != nil {
 				ret.err = err
 				return
 			}
+
+			h, err := url.Parse(v["href"])
+			if err != nil {
+				ret.err = err
+				return
+			}
+			a.Href = h
+
 			a.Historik.Ændret = *o
 
 			a.Adgangsadresse.Vejstykke.Kode = v["vejkode"]
@@ -121,7 +138,7 @@ func ImportAdresserCSV(in io.Reader) (*AdresseIter, error) {
 			a.Adgangsadresse.DDKN.M100 = v["ddkn_m100"]
 			a.Adgangsadresse.DDKN.Km1 = v["ddkn_km1"]
 			a.Adgangsadresse.DDKN.Km10 = v["ddkn_km10"]
-			o, err = ParseTime(v["adressepunktændringsdato"])
+			o, err = time.Parse(v["adressepunktændringsdato"])
 			if err != nil {
 				ret.err = err
 				return
@@ -131,13 +148,13 @@ func ImportAdresserCSV(in io.Reader) (*AdresseIter, error) {
 			a.Adgangsadresse.Status, _ = strconv.Atoi(v["adgangsadresse_status"])
 
 			// PROCESS: adgangsadresse_oprettet,adgangsadresse_ændret,kvhx,regionskode,regionsnavn,sognekode,sognenavn,politikredskode,politikredsnavn,retskredskode,retskredsnavn
-			o, err = ParseTime(v["adgangsadresse_oprettet"])
+			o, err = time.Parse(v["adgangsadresse_oprettet"])
 			if err != nil {
 				ret.err = err
 				return
 			}
 			a.Adgangsadresse.Historik.Oprettet = *o
-			o, err = ParseTime(v["adgangsadresse_ændret"])
+			o, err = time.Parse(v["adgangsadresse_ændret"])
 			if err != nil {
 				ret.err = err
 				return
